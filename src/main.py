@@ -1,20 +1,13 @@
 # src/main.py
-from packages.webcam_driver import webcam_driver
-import cv2
-
-filePath = "test_image.jpg"
+import sys
+from packages.window_driver import window_driver
+from PyQt5.QtWidgets import QApplication
 
 def main():
-    driver = webcam_driver()
-    driver.start()
-    
-    frame = driver.get_frame()
-
-    cv2.imwrite(filePath, frame)
-
-    driver.release()
-
-    
+    app = QApplication(sys.argv)
+    driver = window_driver()
+    driver.display_window()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
