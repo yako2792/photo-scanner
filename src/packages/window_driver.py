@@ -14,6 +14,7 @@ class window_driver(QMainWindow):
 
         self.setup_window()
         self.setup_layout()
+        self.add_video_options()
         
 
     def setup_window(self, geometry = (800,600), title = "Unnamed"):
@@ -95,6 +96,34 @@ class window_driver(QMainWindow):
         self.right_bottom_layout.addWidget(QLabel("Right bottom box"))
         self.right_bottom_layout.setContentsMargins(50, 0, 50, 0)
         self.right_column.addWidget(self.right_bottom_box)
+
+    def add_video_options(self):
+        # Brightness
+        self.brightness_label = QLabel("Brightness")
+        self.brightness_slide = QSlider(Qt.Horizontal, self)
+
+        self.left_top_layout.addWidget(self.brightness_label)
+        self.left_top_layout.addWidget(self.brightness_slide)
+
+        # Contrast
+        self.contrast_label = QLabel("Contrast")
+
+        # HUE
+        self.hue_label = QLabel("HUE")
+
+        # Saturation
+        self.saturation_label = QLabel("Saturation")
+
+        # Sharpness
+        self.sharpness_label = QLabel("Sharpness")
+
+        return
+
+    def add_rotation_options(self):
+        return
+
+    def add_camera_view(self):
+        return
 
     def display_window(self):
         """
