@@ -14,7 +14,7 @@ class webcam_driver:
         """
         Opens webcam and configure video capture.
         
-        Throws and exception if webcam could not be opened.
+        :raises: Exception if device could not be opened.
         """
         self.cap = cv2.VideoCapture(self.camera_index)
         if (not self.cap.isOpened()):
@@ -25,7 +25,7 @@ class webcam_driver:
         Capture one frame.
 
         :return: Captured frame.
-        :raises: Exception if frame could not be captured.
+        c
         """
         if self.cap is not None:
             ret, frame = self.cap.read()
