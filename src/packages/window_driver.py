@@ -1,6 +1,7 @@
 import sys
 import cv2
 from .webcam_driver import webcam_driver
+from .custom_dropdown import custom_dropdown
 from .custom_switch import custom_switch
 from .custom_input import custom_input
 from .custom_slider import custom_slider
@@ -19,9 +20,10 @@ class window_driver(QMainWindow):
         self.setup_layout()
         self.add_video_options()
         self.add_rotation_options()
+        self.add_zoom_options()
         
 
-    def setup_window(self, geometry = (800,600), title = "Unnamed"):
+    def setup_window(self, geometry = (800, 600), title = "Unnamed"):
         """
         Setup window size and title.
         :param geometry: Size of window ((800,600) by default).
@@ -142,6 +144,21 @@ class window_driver(QMainWindow):
         return
     
     def add_zoom_options(self):
+        self.zoom_slider = custom_slider("Zoom")
+        self.focus_slider = custom_slider("Focus")
+        self.exposure_slider = custom_slider("Exposure")
+        self.camera_selection_input = custom_dropdown("Camera No.", "Available cameras")
+        self.set_button = QPushButton()
+        self.set_button.setText("Set")
+        self.default_button = QPushButton()
+        self.default_button.setText("Default")
+
+        self.right_bottom_layout.addWidget(self.zoom_slider)
+        self.right_bottom_layout.addWidget(self.focus_slider)
+        self.right_bottom_layout.addWidget(self.exposure_slider)
+        self.right_bottom_layout.addWidget(self.camera_selection_input)
+        self.right_bottom_layout.addWidget(self.set_button)
+        self.right_bottom_layout.addWidget(self.default_button)
         return
 
     def display_window(self):

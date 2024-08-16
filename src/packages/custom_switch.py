@@ -15,7 +15,7 @@ class custom_switch(QWidget):
         Define essential elements in custom switch widget
         """
         self.main_layout = QHBoxLayout()
-        self.main_layout.setContentsMargins(0,0,0,0)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
         # Label
@@ -23,7 +23,7 @@ class custom_switch(QWidget):
         self.label.setMinimumWidth(50)
         self.label.setMaximumWidth(50)
         self.label.setMaximumHeight(22)
-        self.label.setContentsMargins(0,0,0,0)
+        self.label.setContentsMargins(0, 0, 0, 0)
         # self.label.setStyleSheet("background-color: red;")
 
         # Checkbox

@@ -2,17 +2,17 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-class custom_slider(QWidget):
+class custom_dropdown(QWidget):
     def __init__(self, text = "Unnamed", hint = "", parent = None):
         """
-        Create custom horizontal slider.
+        Create custom dropdown.
         """
         super().__init__(parent)
-        self.setup_slider(text, hint)
-    
-    def setup_slider(self, text, hint):
+        self.setup_dropdown(text, hint)
+
+    def setup_dropdown(self, text, hint):
         """
-        Define essential elements in custom slider widget.
+        Define essential elements in custom dropdown menu.
         """
         self.main_layout = QHBoxLayout()
         self.main_layout.setContentsMargins(0, 0, 0, 0)
@@ -24,15 +24,18 @@ class custom_slider(QWidget):
         self.label.setMaximumHeight(22)
         self.label.setContentsMargins(0, 0, 0, 0)
         # self.label.setStyleSheet("background-color: green;")
-        
-        # Slider
-        self.slider = QSlider()
-        self.slider.setOrientation(Qt.Horizontal)
-        self.slider.setMinimumWidth(100)
-        self.slider.setMaximumWidth(150)
-        self.slider.setContentsMargins(0, 0, 0, 0)
-        # self.slider.setStyleSheet("background-color: red;")
-        
+
+        # Dropdown
+        self.dropdown = QComboBox()
+        self.dropdown.addItem("Camera 1")
+        self.dropdown.addItem("Camera 2")
+        self.dropdown.addItem("Camera 3")
+
+        self.dropdown.setMinimumWidth(100)
+        self.dropdown.setMaximumWidth(150)
+        self.dropdown.setContentsMargins(0, 0, 0, 0)
+        # self.label.setStyleSheet("background-color: red;")
+
         # Hint
         self.hint = QLabel(hint)
         self.hint.setMinimumWidth(50)
@@ -40,18 +43,18 @@ class custom_slider(QWidget):
         self.hint.setMaximumHeight(22)
         self.hint.setContentsMargins(0, 0, 0, 0)
         # self.hint.setStyleSheet("background-color: blue;")
-        
-        # Add all to main layout
+
         self.main_layout.addWidget(self.label)
-        self.main_layout.addWidget(self.slider)
+        self.main_layout.addWidget(self.dropdown)
         self.main_layout.addWidget(self.hint)
 
         self.setLayout(self.main_layout)
     
     def get_value(self):
         """
-        Get slider value/position.
+        Get dropdown selection/value.
 
-        :return: Int value of slider position.
+        :return: Actual selection of dropdown menu.
         """
-        return self.slider.value()
+        value = None
+        return value
