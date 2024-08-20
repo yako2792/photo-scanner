@@ -16,13 +16,19 @@ class window_driver(QMainWindow):
         """
         super().__init__()
 
+        self.selected_camera = 0
+        self.camera0_index = 0
+        self.camera1_index = 1
+        self.fps = 24
+
         self.setup_window()
         self.setup_layout()
         self.add_video_options()
         self.add_rotation_options()
         self.add_zoom_options()
+        self.add_camera_view()
         
-
+    # Setup window and layout
     def setup_window(self, geometry = (800, 600), title = "Unnamed"):
         """
         Setup window size and title.
@@ -90,9 +96,11 @@ class window_driver(QMainWindow):
         self.right_top_box.setStyleSheet("background-color: black;")
         
         self.right_top_layout = QVBoxLayout(self.right_top_box)
-        self.label = QLabel("Live preview (no webcam available)")
-        self.label.setStyleSheet("color: #ffffff")
-        self.right_top_layout.addWidget(self.label)
+        # self.label = QLabel("Live preview (no webcam available)")
+        # self.label.setStyleSheet("color: #ffffff")
+        # self.right_top_layout.addWidget(self.label)
+        self.right_top_layout.setContentsMargins(0, 0, 0, 0)
+        self.right_top_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.right_column.addWidget(self.right_top_box)
 
         ## Right bottom box
@@ -106,6 +114,7 @@ class window_driver(QMainWindow):
         self.right_bottom_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.right_column.addWidget(self.right_bottom_box)
 
+    # Add elements to layout
     def add_video_options(self):
         self.brightness_slider = custom_slider("Brightness")
         self.contrast_slider = custom_slider("Contrast")
@@ -141,6 +150,24 @@ class window_driver(QMainWindow):
         self.left_bottom_layout.addWidget(self.stop_button)
 
     def add_camera_view(self):
+        # Create camera objects
+        self.camera0 = webcam_driver(self.camera0_index, 1920, 1080)
+        self.camera1 = webcam_driver(self.camera1_index, 1920, 1080)
+        
+        # Init camera objects
+        self.camera0.start()
+        self.camera1.start()
+
+        self.camera_timer = QTimer()
+
+        self.video_label = QLabel()
+        self.video_label.setContentsMargins(0, 0, 0, 0)
+        self.video_label.setFixedSize(400, 300)
+        self.right_top_layout.addWidget(self.video_label)
+
+        self.camera_timer.timeout.connect(self.update_frame)
+        self.camera_timer.start(int(1000/self.fps))
+
         return
     
     def add_zoom_options(self):
@@ -159,7 +186,52 @@ class window_driver(QMainWindow):
         self.right_bottom_layout.addWidget(self.camera_selection_input)
         self.right_bottom_layout.addWidget(self.set_button)
         self.right_bottom_layout.addWidget(self.default_button)
+
+        self.camera_selection_input.dropdown.currentIndexChanged.connect(self.on_camera_dropdown_changed)
+        self.set_button.clicked.connect(self.on_set_button_clicked)
         return
+    
+    # Action/functionalities methods
+    def update_frame(self):
+        """
+        Camera frame update
+        """
+        match self.selected_camera:
+            case 0:
+                frame = self.camera0.get_frame()
+                pixmap = self.camera0.to_pixmap(frame)
+            case 1:
+                frame = self.camera1.get_frame()
+                pixmap = self.camera1.to_pixmap(frame)
+        
+        self.video_label.setPixmap(pixmap.scaled(self.video_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+    def on_camera_dropdown_changed(self):
+        """
+        Change camera index based on dropdown selection.
+        """
+        option = self.camera_selection_input.dropdown.currentText()
+        
+        match option:
+            case "Camera 1":
+                self.selected_camera = 0
+            case "Camera 2":
+                self.selected_camera = 1
+            case "Camera 3":
+                self.selected_camera = 2 
+
+    def on_set_button_clicked(self):
+        match self.selected_camera:
+            case 0:
+                frame = self.camera0.get_frame()
+                path_extension = "C0"
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            case 1:
+                frame = self.camera1.get_frame()
+                path_extension = "C1"
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        
+        cv2.imwrite(f"src\\test-images\\test_image{path_extension}.jpg", frame)
 
     def display_window(self):
         """
