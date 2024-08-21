@@ -29,7 +29,7 @@ class custom_dropdown(QWidget):
         self.dropdown = QComboBox()
         self.dropdown.addItem("Camera 1")
         self.dropdown.addItem("Camera 2")
-        self.dropdown.addItem("Camera 3")
+        # self.dropdown.addItem("Camera 3")
 
         self.dropdown.setMinimumWidth(100)
         self.dropdown.setMaximumWidth(150)

@@ -1,5 +1,6 @@
 # packages/webcam_driver.py
 import cv2
+import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
 
 class webcam_driver:
@@ -11,6 +12,20 @@ class webcam_driver:
         self.camera_index = camera_index
         self.width = width
         self.height = height
+
+        self.min_zoom = None;
+        self.max_zoom = None;
+
+        self.default_brightness = 0
+        self.default_contrast = 1.0
+        self.default_saturation = 1.0
+        self.default_hue_shift = 0
+
+        self.brightness = self.default_brightness
+        self.contrast = self.default_contrast
+        self.saturation = self.default_saturation
+        self.hue_shift = self.default_hue_shift
+
         self.cap = None
 
     def start(self):
@@ -23,19 +38,22 @@ class webcam_driver:
         if (not self.cap.isOpened()):
             raise Exception("Could not open video device")
         
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.width)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+        print(f"[Camera {self.camera_index}] Resolution set ({self.width} x {self.height}).")
+        self.characterize_camera()
+
     
     def get_frame(self):
         """
         Capture one frame.
 
         :return: Captured frame.
-        c
         """
         if self.cap is not None:
             ret, frame = self.cap.read()
             if ret:
+                frame = self.apply_adjustments(frame)
                 return frame
             else:
                 raise Exception("Failed to grab frame")
@@ -61,6 +79,97 @@ class webcam_driver:
         
         # Return converted image
         return QPixmap.fromImage(q_image)
+    
+    def is_zoom_enabled(self):
+        """
+        Check if camera has zoom options
+        """
+        current_zoom = self.cap.get(cv2.CAP_PROP_ZOOM)
+        return current_zoom != -1
+    
+    def set_zoom(self, zoom_value):
+        """
+        Apply given zoom to camera.
+        :param zoom_value: Zoom value to be applied.
+        """
+        if self.is_zoom_enabled():
+            self.cap.set(cv2.CAP_PROP_ZOOM, zoom_value)
+            # print(f"[Camera {self.camera_index}] Zoom set to: {zoom_value}")
+        else:
+            print(f"[Camera {self.camera_index}] Camera does not have zoom options.")
+
+    def set_brightness(self, value):
+        """
+        Set a brightness value.
+        :param value: Value to be set.
+        """
+        self.brightness = value
+
+    def set_contrast(self, value):
+        """
+        Set a contrast value.
+        :param value: Value to be set.
+        """
+        self.contrast = value
+
+    def set_saturation(self, value):
+        """
+        Set a saturation value.
+        :param value: Value to be set.
+        """
+        self.saturation = value
+
+    def set_hue_shift(self, value):
+        """
+        Set a HUE value.
+        :param value: Value to be set.
+        """
+        self.hue_shift = value
+
+
+    def apply_adjustments(self, frame):
+        """
+        Apply all adjustments in picture
+        :param frame: Frame were settings will be applied.
+        """
+        # Adjust brightness
+        frame = cv2.add(frame, np.array([self.brightness, self.brightness, self.brightness], dtype=np.uint8))
+
+        # Adjust contrast
+        frame = cv2.convertScaleAbs(frame, alpha=self.contrast, beta=0)
+
+        # Adjust saturation
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv[:, :, 1] = cv2.multiply(hsv[:, :, 1], self.saturation)
+        
+        # Adjust matrix
+        hsv[:, :, 0] = (hsv[:, :, 0] + self.hue_shift) % 180
+
+        frame = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
+        return frame
+
+    def characterize_camera(self):
+        """
+        Characterize camera values/properties
+        """
+        # Get min and max zoom values
+        zoom_values = []
+        if self.is_zoom_enabled():
+            for zoom_value in range(1, 11):
+                success = self.cap.set(cv2.CAP_PROP_ZOOM, zoom_value)
+                if success:
+                    zoom_values.append(zoom_value)
+            
+            if zoom_values:
+                self.min_zoom = min(zoom_values)
+                self.max_zoom = max(zoom_values)  
+            else:
+                print(f"[Camera {self.camera_index}] No zoom values were successfully set.")  
+        else:
+            print(f"[Camera {self.camera_index}] Camera has no zoom values.")
+
+        
 
 
     def release(self):

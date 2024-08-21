@@ -9,6 +9,8 @@ class custom_slider(QWidget):
         """
         super().__init__(parent)
         self.setup_slider(text, hint)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(10)
     
     def setup_slider(self, text, hint):
         """
@@ -47,6 +49,10 @@ class custom_slider(QWidget):
         self.main_layout.addWidget(self.hint)
 
         self.setLayout(self.main_layout)
+    
+    def set_min_max_values(self, min, max):
+        self.slider.setMinimum(min)
+        self.slider.setMaximum(max)
     
     def get_value(self):
         """

@@ -16,11 +16,13 @@ class window_driver(QMainWindow):
         """
         super().__init__()
 
+        # Camera settings
         self.selected_camera = 0
         self.camera0_index = 0
         self.camera1_index = 1
-        self.fps = 24
+        self.fps = 10
 
+        # Setup app
         self.setup_window()
         self.setup_layout()
         self.add_video_options()
@@ -120,13 +122,30 @@ class window_driver(QMainWindow):
         self.contrast_slider = custom_slider("Contrast")
         self.hue_slider = custom_slider("HUE")
         self.saturation_slider = custom_slider("saturation")
-        self.sharpness_slider = custom_slider("Sharpness")
+        # self.sharpness_slider = custom_slider("Sharpness")
 
         self.left_top_layout.addWidget(self.brightness_slider)
         self.left_top_layout.addWidget(self.contrast_slider)
         self.left_top_layout.addWidget(self.hue_slider)
         self.left_top_layout.addWidget(self.saturation_slider)
-        self.left_top_layout.addWidget(self.sharpness_slider)
+        # self.left_top_layout.addWidget(self.sharpness_slider)
+
+        # Set custom minimum and maximum values
+        self.brightness_slider.set_min_max_values(0, 100)
+        self.contrast_slider.set_min_max_values(0, 30)
+        self.hue_slider.set_min_max_values(0,100)
+        self.saturation_slider.set_min_max_values(0, 30)
+
+        # Set default values
+        self.brightness_slider.slider.setValue(0)
+        self.contrast_slider.slider.setValue(10)
+        self.hue_slider.slider.setValue(0)
+        self.saturation_slider.slider.setValue(10)
+
+        self.brightness_slider.slider.valueChanged.connect(self.on_brightness_changed)
+        self.contrast_slider.slider.valueChanged.connect(self.on_contrast_changed)
+        self.hue_slider.slider.valueChanged.connect(self.on_hue_changed)
+        self.saturation_slider.slider.valueChanged.connect(self.on_saturation_changed)
 
     def add_rotation_options(self):
         self.mode_switch = custom_switch("Mode")
@@ -189,6 +208,7 @@ class window_driver(QMainWindow):
 
         self.camera_selection_input.dropdown.currentIndexChanged.connect(self.on_camera_dropdown_changed)
         self.set_button.clicked.connect(self.on_set_button_clicked)
+        self.zoom_slider.slider.valueChanged.connect(self.on_zoom_changed)
         return
     
     # Action/functionalities methods
@@ -232,6 +252,47 @@ class window_driver(QMainWindow):
                 # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
         cv2.imwrite(f"src\\test-images\\test_image{path_extension}.jpg", frame)
+
+    def on_zoom_changed(self):
+        value = float(self.zoom_slider.slider.value())
+        # print(f"[Zoom Slider] value {value}")
+        match self.selected_camera:
+            case 0:
+                self.camera0.set_zoom(value)
+            case 1:
+                self.camera1.set_zoom(value)
+
+    def on_brightness_changed(self):
+        value = self.brightness_slider.slider.value()
+        match self.selected_camera:
+            case 0:
+                self.camera0.set_brightness(value)
+            case 1:
+                self.camera1.set_brightness(value)   
+
+    def on_contrast_changed(self):
+        value = (self.contrast_slider.slider.value())/10
+        match self.selected_camera:
+            case 0:
+                self.camera0.set_contrast(value)
+            case 1:
+                self.camera1.set_contrast(value) 
+
+    def on_hue_changed(self):
+        value = self.hue_slider.slider.value()
+        match self.selected_camera:
+            case 0:
+                self.camera0.set_hue_shift(value)
+            case 1:
+                self.camera1.set_hue_shift(value)
+
+    def on_saturation_changed(self):
+        value = (self.saturation_slider.slider.value())/10
+        match self.selected_camera:
+            case 0:
+                self.camera0.set_saturation(value)
+            case 1:
+                self.camera1.set_saturation(value) 
 
     def display_window(self):
         """
