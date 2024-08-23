@@ -1,5 +1,6 @@
 import sys
 import cv2
+import numpy as np
 from .webcam_driver import webcam_driver
 from .custom_dropdown import custom_dropdown
 from .custom_switch import custom_switch
@@ -20,7 +21,9 @@ class window_driver(QMainWindow):
         self.selected_camera = 0
         self.camera0_index = 0
         self.camera1_index = 1
-        self.fps = 10
+        self.fps = 5
+
+        self.preview = False
 
         # Setup app
         self.setup_window()
@@ -111,7 +114,7 @@ class window_driver(QMainWindow):
         # self.right_bottom_box.setStyleSheet("background-color: lightblue;")
         
         self.right_bottom_layout = QVBoxLayout(self.right_bottom_box)
-        self.right_bottom_layout.addWidget(QLabel("Right bottom box"))
+        self.right_bottom_layout.addWidget(QLabel("Camera control options"))
         self.right_bottom_layout.setContentsMargins(25, 50, 25, 0)
         self.right_bottom_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.right_column.addWidget(self.right_bottom_box)
@@ -148,10 +151,10 @@ class window_driver(QMainWindow):
         self.saturation_slider.slider.valueChanged.connect(self.on_saturation_changed)
 
     def add_rotation_options(self):
-        self.mode_switch = custom_switch("Mode")
-        self.frequency_input = custom_input("Frequency", "Degrees per photo")
-        self.degrees_input = custom_input("Degrees", "Degrees to be rotated.")
-        self.save_input = custom_input("Save As", "<browser>")
+        self.frequency_input = custom_dropdown("Frequency", "Capture interval.")
+        self.degrees_input = custom_dropdown("Degrees", "Rotation degrees.")
+        self.file_name_input = custom_input("ID", "Part number.")
+        self.path_input = custom_input("Path", "File save path.")
 
         self.start_button = QPushButton()
         self.start_button.setText("Start")
@@ -160,17 +163,28 @@ class window_driver(QMainWindow):
         self.stop_button = QPushButton()
         self.stop_button.setText("Stop")
 
-        self.left_bottom_layout.addWidget(self.mode_switch)
+        # Setup dropdown content
+        self.frequency_input.add_item("5 Degs")
+        self.frequency_input.add_item("10 Degs")
+        self.frequency_input.add_item("15 Degs")
+        self.frequency_input.add_item("25 Degs")
+
+        self.degrees_input.add_item("45 Degs")
+        self.degrees_input.add_item("90 Degs")
+        self.degrees_input.add_item("180 Degs")
+        self.degrees_input.add_item("360 Degs")
+
         self.left_bottom_layout.addWidget(self.frequency_input)
         self.left_bottom_layout.addWidget(self.degrees_input)
-        self.left_bottom_layout.addWidget(self.save_input)
+        self.left_bottom_layout.addWidget(self.file_name_input)
+        self.left_bottom_layout.addWidget(self.path_input)
         self.left_bottom_layout.addWidget(self.start_button)
         self.left_bottom_layout.addWidget(self.reset_button)
         self.left_bottom_layout.addWidget(self.stop_button)
 
     def add_camera_view(self):
         # Create camera objects
-        self.camera0 = webcam_driver(self.camera0_index, 1920, 1080)
+        self.camera0 = webcam_driver(self.camera0_index, 3840, 2160)
         self.camera1 = webcam_driver(self.camera1_index, 1920, 1080)
         
         # Init camera objects
@@ -190,25 +204,30 @@ class window_driver(QMainWindow):
         return
     
     def add_zoom_options(self):
+        self.live_preview_switch = custom_switch("Live view")
+        self.capture_button = QPushButton(); self.capture_button.setText("Capture")
         self.zoom_slider = custom_slider("Zoom")
         self.focus_slider = custom_slider("Focus")
         self.exposure_slider = custom_slider("Exposure")
         self.camera_selection_input = custom_dropdown("Camera No.", "Available cameras")
-        self.set_button = QPushButton()
-        self.set_button.setText("Set")
-        self.default_button = QPushButton()
-        self.default_button.setText("Default")
+        self.default_button = QPushButton(); self.default_button.setText("Default")
 
+        self.camera_selection_input.add_item("Camera 1")
+        self.camera_selection_input.add_item("Camera 2")
+
+        self.right_bottom_layout.addWidget(self.live_preview_switch)
+        self.right_bottom_layout.addWidget(self.capture_button)
         self.right_bottom_layout.addWidget(self.zoom_slider)
         self.right_bottom_layout.addWidget(self.focus_slider)
         self.right_bottom_layout.addWidget(self.exposure_slider)
         self.right_bottom_layout.addWidget(self.camera_selection_input)
-        self.right_bottom_layout.addWidget(self.set_button)
         self.right_bottom_layout.addWidget(self.default_button)
 
         self.camera_selection_input.dropdown.currentIndexChanged.connect(self.on_camera_dropdown_changed)
-        self.set_button.clicked.connect(self.on_set_button_clicked)
+        self.capture_button.clicked.connect(self.on_capture_button_clicked)
+        self.default_button.clicked.connect(self.on_default_button_clicked)
         self.zoom_slider.slider.valueChanged.connect(self.on_zoom_changed)
+        self.live_preview_switch.switch.stateChanged.connect(self.on_live_preview_changed)
         return
     
     # Action/functionalities methods
@@ -216,15 +235,16 @@ class window_driver(QMainWindow):
         """
         Camera frame update
         """
-        match self.selected_camera:
-            case 0:
-                frame = self.camera0.get_frame()
-                pixmap = self.camera0.to_pixmap(frame)
-            case 1:
-                frame = self.camera1.get_frame()
-                pixmap = self.camera1.to_pixmap(frame)
+        if self.preview:
+            match self.selected_camera:
+                case 0:
+                    frame = self.camera0.get_frame()
+                    pixmap = self.camera0.to_pixmap(frame)
+                case 1:
+                    frame = self.camera1.get_frame()
+                    pixmap = self.camera1.to_pixmap(frame)
         
-        self.video_label.setPixmap(pixmap.scaled(self.video_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.video_label.setPixmap(pixmap.scaled(self.video_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def on_camera_dropdown_changed(self):
         """
@@ -240,18 +260,49 @@ class window_driver(QMainWindow):
             case "Camera 3":
                 self.selected_camera = 2 
 
-    def on_set_button_clicked(self):
+    def on_capture_button_clicked(self):
         match self.selected_camera:
             case 0:
                 frame = self.camera0.get_frame()
-                path_extension = "C0"
+                path_extension = "CAM0"
                 # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             case 1:
                 frame = self.camera1.get_frame()
-                path_extension = "C1"
+                path_extension = "CAM1"
                 # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
-        cv2.imwrite(f"src\\test-images\\test_image{path_extension}.jpg", frame)
+        path = f"src\\test-images\\{path_extension}.jpg"
+        cv2.imwrite(path, frame)
+        pixmap = QPixmap(path)
+        self.video_label.setPixmap(pixmap.scaled(self.video_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+    def on_default_button_clicked(self):
+        match self.selected_camera:
+            case 0:
+                default_brightness = self.camera0.default_brightness
+                default_contrast = self.camera0.default_contrast
+                default_saturation = self.camera0.default_saturation
+                default_hue_shift = self.camera0.default_hue_shift
+
+                self.camera0.set_brightness(default_brightness)
+                self.camera0.set_contrast(default_contrast)
+                self.camera0.set_saturation(default_saturation)
+                self.camera0.set_hue_shift(default_hue_shift)
+            case 1:
+                default_brightness = self.camera1.default_brightness
+                default_contrast = self.camera1.default_contrast
+                default_saturation = self.camera1.default_saturation
+                default_hue_shift = self.camera1.default_hue_shift
+
+                self.camera1.set_brightness(default_brightness)
+                self.camera1.set_contrast(default_contrast)
+                self.camera1.set_saturation(default_saturation)
+                self.camera1.set_hue_shift(default_hue_shift)
+        
+        self.brightness_slider.slider.setValue(default_brightness)
+        self.contrast_slider.slider.setValue(default_contrast*10)
+        self.saturation_slider.slider.setValue(default_saturation*10)
+        self.hue_slider.slider.setValue(default_hue_shift)
 
     def on_zoom_changed(self):
         value = float(self.zoom_slider.slider.value())
@@ -285,6 +336,15 @@ class window_driver(QMainWindow):
                 self.camera0.set_hue_shift(value)
             case 1:
                 self.camera1.set_hue_shift(value)
+    
+    def on_live_preview_changed(self, state):
+        match state:
+            case 0:
+                self.capture_button.setEnabled(True)
+                self.preview = False
+            case 2:
+                self.capture_button.setEnabled(False)
+                self.preview = True
 
     def on_saturation_changed(self):
         value = (self.saturation_slider.slider.value())/10

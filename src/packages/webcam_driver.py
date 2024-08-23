@@ -17,8 +17,8 @@ class webcam_driver:
         self.max_zoom = None;
 
         self.default_brightness = 0
-        self.default_contrast = 1.0
-        self.default_saturation = 1.0
+        self.default_contrast = 1
+        self.default_saturation = 1
         self.default_hue_shift = 0
 
         self.brightness = self.default_brightness

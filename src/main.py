@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication
 def main():
     app = QApplication(sys.argv)
     driver = window_driver()
+    #apply_stylesheet() PENDING...
     driver.display_window()
     sys.exit(app.exec_())
 

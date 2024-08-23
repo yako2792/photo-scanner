@@ -27,8 +27,8 @@ class custom_dropdown(QWidget):
 
         # Dropdown
         self.dropdown = QComboBox()
-        self.dropdown.addItem("Camera 1")
-        self.dropdown.addItem("Camera 2")
+        # self.dropdown.addItem("Camera 1")
+        # self.dropdown.addItem("Camera 2")
         # self.dropdown.addItem("Camera 3")
 
         self.dropdown.setMinimumWidth(100)
@@ -49,6 +49,14 @@ class custom_dropdown(QWidget):
         self.main_layout.addWidget(self.hint)
 
         self.setLayout(self.main_layout)
+    
+    def add_item(self, item):
+        """
+        Add an item to dropdown menu.
+
+        :param item: Item to be added.
+        """
+        self.dropdown.addItem(item)
     
     def get_value(self):
         """
