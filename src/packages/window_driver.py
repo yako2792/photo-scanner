@@ -1,6 +1,6 @@
-import sys
 import cv2
-import numpy as np
+import serial
+import time
 from .webcam_driver import webcam_driver
 from .custom_dropdown import custom_dropdown
 from .custom_switch import custom_switch
@@ -25,6 +25,12 @@ class window_driver(QMainWindow):
 
         self.preview = False
 
+        # Serial message
+        self.ser = serial.Serial("COM7", 9600, timeout=1)
+        self.capture_frequency = 0
+        self.degrees_movement = 0
+        self.serial_array = [0, 0]
+
         # Setup app
         self.setup_window()
         self.setup_layout()
@@ -34,7 +40,7 @@ class window_driver(QMainWindow):
         self.add_camera_view()
         
     # Setup window and layout
-    def setup_window(self, geometry = (800, 600), title = "Unnamed"):
+    def setup_window(self, geometry = (800, 600), title = "Photo Scanner"):
         """
         Setup window size and title.
         :param geometry: Size of window ((800,600) by default).
@@ -156,19 +162,24 @@ class window_driver(QMainWindow):
         self.file_name_input = custom_input("ID", "Part number.")
         self.path_input = custom_input("Path", "File save path.")
 
+        # Buttons and setup
         self.start_button = QPushButton()
         self.start_button.setText("Start")
-        self.reset_button = QPushButton()
-        self.reset_button.setText("Reset")
+        self.start_button.setEnabled(False)
+
         self.stop_button = QPushButton()
         self.stop_button.setText("Stop")
+        self.stop_button.setEnabled(False)
 
         # Setup dropdown content
+        self.frequency_input.add_item("Select")
         self.frequency_input.add_item("5 Degs")
         self.frequency_input.add_item("10 Degs")
         self.frequency_input.add_item("15 Degs")
         self.frequency_input.add_item("25 Degs")
 
+        self.degrees_input.dropdown.setEnabled(False)  
+        self.degrees_input.add_item("Select")      
         self.degrees_input.add_item("45 Degs")
         self.degrees_input.add_item("90 Degs")
         self.degrees_input.add_item("180 Degs")
@@ -179,8 +190,12 @@ class window_driver(QMainWindow):
         self.left_bottom_layout.addWidget(self.file_name_input)
         self.left_bottom_layout.addWidget(self.path_input)
         self.left_bottom_layout.addWidget(self.start_button)
-        self.left_bottom_layout.addWidget(self.reset_button)
         self.left_bottom_layout.addWidget(self.stop_button)
+
+        self.frequency_input.dropdown.currentIndexChanged.connect(self.on_frequency_changed)
+        self.degrees_input.dropdown.currentIndexChanged.connect(self.on_degrees_changed)
+        self.start_button.clicked.connect(self.on_start_button_pressed)
+        self.stop_button.clicked.connect(self.on_stop_button_pressed)
 
     def add_camera_view(self):
         # Create camera objects
@@ -353,6 +368,61 @@ class window_driver(QMainWindow):
                 self.camera0.set_saturation(value)
             case 1:
                 self.camera1.set_saturation(value) 
+
+    def on_frequency_changed(self):
+        option = self.frequency_input.dropdown.currentText()
+        self.degrees_input.dropdown.setEnabled(True)
+
+        match option:
+            case "Select":
+                self.degrees_input.dropdown.setEnabled(False)
+                self.degrees_input.dropdown.setCurrentIndex(0)
+            case "5 Degs":
+                self.capture_frequency = 5
+
+            case "10 Degs":
+                self.capture_frequency = 10
+
+            case "15 Degs":
+                self.capture_frequency = 15
+
+            case "25 Degs":
+                self.capture_frequency = 25
+        
+        pulse_frequency = int(self.capture_frequency*16000/360)
+        self.serial_array[0] = pulse_frequency
+        
+    def on_degrees_changed(self):
+        option = self.degrees_input.dropdown.currentText()
+        self.start_button.setEnabled(True)
+
+        match option:
+            case "Select":
+                self.start_button.setEnabled(False)
+
+            case "45 Degs":
+                self.degrees_movement = 45
+            case "90 Degs":
+                self.degrees_movement = 90
+            case "180 Degs":
+                self.degrees_movement = 180
+            case "360 Degs":
+                self.degrees_movement = 360
+
+        times_to_move = int(self.degrees_movement/self.capture_frequency)
+        self.serial_array[1] = times_to_move
+
+    def on_start_button_pressed(self):
+        self.stop_button.setEnabled(True)
+
+        message = str(self.serial_array[0]) + "," + str(self.serial_array[1]) + "\n"
+        print(message.encode())
+        self.ser.write(message.encode())
+    
+    def on_stop_button_pressed(self):
+        message = str(1) + "\n"
+        print(message.encode())
+        self.ser.write(message.encode())
 
     def display_window(self):
         """
