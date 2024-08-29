@@ -2,20 +2,17 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-class custom_input (QWidget):
+class custom_file_browser (QWidget):
     def __init__(self,text = "Unnamed", hint = "", parent = None):
-        """
-        Create custom input field.
-        """
         super().__init__(parent)
-        self.setup_input(text, hint)
+        self.setup_browser(text, hint)
     
-    def setup_input(self, text, hint):
+    def setup_browser(self, text, hint):
         """
-        Define essential elements in custom input field.
+        Define essential elements in custom file browser.
         """
         self.main_layout = QHBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(0, 0, 0, 15)
 
         # Label
         self.label = QLabel(text)
@@ -23,29 +20,35 @@ class custom_input (QWidget):
         self.label.setMaximumWidth(80)
         self.label.setMaximumHeight(22)
         self.label.setContentsMargins(0, 0, 0, 0)
-        # self.label.setStyleSheet("background-color: green;")
-        
+
         # Slider
         self.input = QLineEdit()
         self.input.setMinimumWidth(100)
         self.input.setMaximumWidth(150)
         self.input.setContentsMargins(0, 0, 0, 0)
-        # self.input.setStyleSheet("background-color: red;")
-        
+        self.input.setDisabled(True)
+
         # Hint
-        self.hint = QLabel(hint)
-        self.hint.setMinimumWidth(50)
-        self.hint.setMaximumWidth(100)
-        self.hint.setMaximumHeight(22)
-        self.hint.setContentsMargins(0, 0, 0, 0)
-        # self.hint.setStyleSheet("background-color: blue;")
-        
+        self.button = QPushButton(hint)
+        self.button.setMinimumWidth(50)
+        self.button.setMaximumWidth(100)
+        self.button.setMaximumHeight(22)
+        self.button.setContentsMargins(0, 0, 0, 0)
+
         # Add all to main layout
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.input)
-        self.main_layout.addWidget(self.hint)
+        self.main_layout.addWidget(self.button)
 
         self.setLayout(self.main_layout)
+    
+    def set_input_field_text(self, text):
+        """
+        Add text to input filed.
+
+        :param text: Value to insert in text field.
+        """
+        self.input.setText(text)
     
     def get_value(self):
         """

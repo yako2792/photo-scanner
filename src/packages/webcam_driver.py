@@ -1,5 +1,6 @@
 # packages/webcam_driver.py
 import cv2
+import time
 import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
 
@@ -16,6 +17,7 @@ class webcam_driver:
         self.min_zoom = None;
         self.max_zoom = None;
 
+        # Video proc options
         self.default_brightness = 0
         self.default_contrast = 1
         self.default_saturation = 1
@@ -25,6 +27,14 @@ class webcam_driver:
         self.contrast = self.default_contrast
         self.saturation = self.default_saturation
         self.hue_shift = self.default_hue_shift
+
+        # Camera video options
+        self.default_exposure = -6
+        self.default_gain = 0
+
+        self.exposure = self.default_exposure
+        self.gain = self.default_gain
+
 
         self.cap = None
 
@@ -42,6 +52,14 @@ class webcam_driver:
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
         print(f"[Camera {self.camera_index}] Resolution set ({self.width} x {self.height}).")
         self.characterize_camera()
+
+        # Initialize first frames
+        self.get_frame()
+        time.sleep(0.1)
+        self.get_frame()
+        time.sleep(0.1)
+        self.get_frame()
+        time.sleep(0.1)
 
     
     def get_frame(self):
@@ -87,16 +105,12 @@ class webcam_driver:
         current_zoom = self.cap.get(cv2.CAP_PROP_ZOOM)
         return current_zoom != -1
     
-    def set_zoom(self, zoom_value):
+    def set_gain(self, gain_value):
         """
         Apply given zoom to camera.
         :param zoom_value: Zoom value to be applied.
         """
-        if self.is_zoom_enabled():
-            self.cap.set(cv2.CAP_PROP_ZOOM, zoom_value)
-            # print(f"[Camera {self.camera_index}] Zoom set to: {zoom_value}")
-        else:
-            print(f"[Camera {self.camera_index}] Camera does not have zoom options.")
+        self.gain = gain_value
 
     def set_brightness(self, value):
         """
@@ -132,6 +146,12 @@ class webcam_driver:
         Apply all adjustments in picture
         :param frame: Frame were settings will be applied.
         """
+        # Adjust exposure
+        self.cap.set(cv2.CAP_PROP_EXPOSURE, self.exposure)
+
+        # Adjust gain/iso
+        self.cap.set(cv2.CAP_PROP_GAIN, self.gain)
+
         # Adjust brightness
         frame = cv2.add(frame, np.array([self.brightness, self.brightness, self.brightness], dtype=np.uint8))
 
@@ -170,7 +190,12 @@ class webcam_driver:
             print(f"[Camera {self.camera_index}] Camera has no zoom values.")
 
         
-
+    def set_exposure(self, value):
+        """
+        Set camera exposure manually.
+        :param value: New exposure value.
+        """
+        self.exposure = value
 
     def release(self):
         """

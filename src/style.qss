@@ -1,0 +1,53 @@
+QSlider {
+    background: #e5e5e5;
+    height: 10px;
+}
+
+QSlider::groove:horizontal {
+    background: #e5e5e5;
+    height: 10px;
+    border-radius: 5px;
+}
+
+QSlider::handle:horizontal {
+    background: #061d24;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    margin: -5px 0;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #061d24;
+}
+
+QSlider::sub-page:horizontal {
+    background: #bdc6d1;
+    border-radius: 5px;
+}
+
+QLabel {
+    font-family: Arial;
+    font-size: 11px;
+    padding-bottom: 5px;
+}
+
+#startButton {
+    background-color: #e2e4e2;  /* Color de fondo azul */
+    color: black;            /* Color del texto blanco */
+    border-radius: 5px;     /* Bordes redondeados */
+    padding: 8px;
+    margin: 10px;           /* Espaciado interno */
+}
+
+#startButton:hover {
+    background-color: #95a3a4;  /* Color de fondo azul */
+}
+
+#startButton:pressed {
+    background-color: #f7f3ee;  /* Color de fondo azul */
+}
+
+#startButton:disabled {
+    background-color: #c8c5c5;  /* Color de fondo azul */
+}
