@@ -292,7 +292,7 @@ class window_driver(QMainWindow):
                 self.saturation_slider.slider.setValue(int(self.camera0.saturation*10))
                 self.hue_slider.slider.setValue(self.camera0.hue_shift)
                 self.exposure_slider.slider.setValue(self.camera0.exposure)
-                self.gain_slider.slider.setValue(self.camera0.gain)
+                self.gain_slider.slider.setValue(int(self.camera0.gain))
             case "Camera 2":
                 self.selected_camera = 1
                 self.brightness_slider.slider.setValue(self.camera1.brightness) 
@@ -300,7 +300,7 @@ class window_driver(QMainWindow):
                 self.saturation_slider.slider.setValue(int(self.camera1.saturation*10))
                 self.hue_slider.slider.setValue(self.camera1.hue_shift)
                 self.exposure_slider.slider.setValue(self.camera1.exposure)
-                self.gain_slider.slider.setValue(self.camera1.gain)
+                self.gain_slider.slider.setValue(int(self.camera1.gain))
             case "Camera 3":
                 self.selected_camera = 2
                 self.brightness_slider.slider.setValue(self.camera2.brightness) 
@@ -308,7 +308,7 @@ class window_driver(QMainWindow):
                 self.saturation_slider.slider.setValue(int(self.camera2.saturation*10))
                 self.hue_slider.slider.setValue(self.camera2.hue_shift)
                 self.exposure_slider.slider.setValue(self.camera2.exposure)
-                self.gain_slider.slider.setValue(self.camera2.gain)
+                self.gain_slider.slider.setValue(int(self.camera2.gain))
 
     def on_capture_button_clicked(self):
         match self.selected_camera:
