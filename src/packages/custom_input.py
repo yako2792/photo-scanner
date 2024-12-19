@@ -2,50 +2,43 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
-class custom_input (QWidget):
-    def __init__(self,text = "Unnamed", hint = "", parent = None):
-        """
-        Create custom input field.
-        """
-        super().__init__(parent)
-        self.setup_input(text, hint)
-    
-    def setup_input(self, text, hint):
-        """
-        Define essential elements in custom input field.
-        """
-        self.main_layout = QHBoxLayout()
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+class custom_input(QWidget):
+    def __init__(self, label_text, placeholder_text, hint_text=None):
+        super().__init__()
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         # Label
-        self.label = QLabel(text)
+        self.label = QLabel(label_text)
         self.label.setMinimumWidth(50)
         self.label.setMaximumWidth(80)
         self.label.setMaximumHeight(22)
         self.label.setContentsMargins(0, 0, 0, 0)
-        # self.label.setStyleSheet("background-color: green;")
         
-        # Slider
-        self.input = QLineEdit()
-        self.input.setMinimumWidth(100)
-        self.input.setMaximumWidth(150)
-        self.input.setContentsMargins(0, 0, 0, 0)
-        # self.input.setStyleSheet("background-color: red;")
+        # Input Field
+        self.input_field = QLineEdit()
+        self.input_field.setMinimumWidth(100)
+        self.input_field.setMaximumWidth(150)
+        self.input_field.setPlaceholderText(placeholder_text)
+        self.input_field.setContentsMargins(0, 0, 0, 0)
         
-        # Hint
-        self.hint = QLabel(hint)
-        self.hint.setMinimumWidth(50)
-        self.hint.setMaximumWidth(100)
-        self.hint.setMaximumHeight(22)
-        self.hint.setContentsMargins(0, 0, 0, 0)
-        # self.hint.setStyleSheet("background-color: blue;")
+        # Hint Label (optional)
+        if hint_text:
+            self.hint = QLabel(hint_text)
+            self.hint.setMinimumWidth(50)
+            self.hint.setMaximumWidth(100)
+            self.hint.setMaximumHeight(22)
+            self.hint.setContentsMargins(0, 0, 0, 0)
+            # Add widgets to the layout
+            self.layout.addWidget(self.label)
+            self.layout.addWidget(self.input_field)
+            self.layout.addWidget(self.hint)
+        else:
+            # Add widgets to the layout without hint
+            self.layout.addWidget(self.label)
+            self.layout.addWidget(self.input_field)
         
-        # Add all to main layout
-        self.main_layout.addWidget(self.label)
-        self.main_layout.addWidget(self.input)
-        self.main_layout.addWidget(self.hint)
-
-        self.setLayout(self.main_layout)
+        self.setLayout(self.layout)
     
     def get_value(self):
         """
@@ -53,4 +46,12 @@ class custom_input (QWidget):
 
         :return: Value of input field.
         """
-        return self.input.text()
+        return self.input_field.text()
+        
+    def set_value(self, value):
+        """
+        Set input field value.
+
+        :param value: Value to set in input field.
+        """
+        self.input_field.setText(value)
