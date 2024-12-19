@@ -5,7 +5,7 @@ a = Analysis(
     ['puertos.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('packages', 'packages')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
